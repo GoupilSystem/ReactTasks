@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import TaskList from './components/TaskList';
 import TaskCreate from './components/TaskCreate';
 import Search from './components/Search';
+import Simple from './components/Simple'; 
+import Simple2 from './components/Simple2'; 
 import './app.css';
 
 function App() {
@@ -100,7 +102,6 @@ function App() {
     return 0;
   });
 
-
   return (
     <Router>
       <div className="App">
@@ -125,31 +126,19 @@ function App() {
           {/* Add additional sort options as needed */}
         </select>
 
-        <ul>
-          {filteredTasks.map((task) => (
-            <li key={task.id}>
-              <span
-                className={task.completed ? 'completed task-text' : 'task-text'}
-                onClick={() => handleTaskToggle(task.id)}
-              >
-                {task.text}
-              </span>
-              <button className="delete-button" onClick={() => handleTaskDelete(task.id)}>Delete</button>
-              {!task.completed && (
-                <button className="complete-button" onClick={() => handleTaskComplete(task.id)}>Complete</button>
-              )}
-            </li>
-          ))}
-        </ul>
-
-        {/* <Routes>
-          <Route 
-            exact path="/" 
-            render={() => <TaskList tasks={tasks} handleTaskToggle={handleTaskToggle} handleTaskDelete={handleTaskDelete} />} />
-          <Route 
-            exact path="/create" 
-            render={() => <TaskCreate handleTaskSubmit={handleTaskSubmit} />} />
-        </Routes> */}
+        <TaskList
+          tasks={filteredTasks}
+          handleTaskToggle={handleTaskToggle}
+          handleTaskDelete={handleTaskDelete}
+          handleTaskComplete={handleTaskComplete}
+        />
+        
+        <Routes>
+          {/* Add your routes */}
+          <Route path="/" element={<Simple />} />
+          <Route path="/create" element={<Simple2 />} />
+        </Routes>
+        
       </div>
     </Router>
   );
