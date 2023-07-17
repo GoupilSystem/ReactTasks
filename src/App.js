@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import TaskList from './components/TaskList';
-import TaskCreate from './components/TaskCreate';
 import Search from './components/Search';
 import Simple from './components/Simple'; 
-import Simple2 from './components/Simple2'; 
 import './app.css';
 
 function App() {
@@ -102,6 +100,27 @@ function App() {
     return 0;
   });
 
+  const [response, setResponse] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const url = 'https://reacttasks-functions.azurewebsites.net/api/TaskManagementFunction';
+        const response = await fetch(url);    
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }    
+        const data = await response.text();
+        console.log(data);    
+        setResponse(data);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+  
+    fetchData();
+  }, []);
+
   return (
     <Router>
       <div className="App">
@@ -126,19 +145,22 @@ function App() {
           {/* Add additional sort options as needed */}
         </select>
 
-        <TaskList
-          tasks={filteredTasks}
-          handleTaskToggle={handleTaskToggle}
-          handleTaskDelete={handleTaskDelete}
-          handleTaskComplete={handleTaskComplete}
-        />
-        
         <Routes>
           {/* Add your routes */}
-          <Route path="/" element={<Simple />} />
-          <Route path="/create" element={<Simple2 />} />
+          <Route path="/" element={<TaskList 
+            tasks={filteredTasks} 
+            handleTaskToggle={handleTaskToggle} 
+            handleTaskDelete={handleTaskDelete} 
+            handleTaskComplete={handleTaskComplete} />} 
+          />
+          <Route path="/simple" element={<Simple />} />
         </Routes>
-        
+
+        <div>
+          <h1>Azure Function Response:</h1>
+          <p>{response}</p>
+        </div>
+
       </div>
     </Router>
   );
