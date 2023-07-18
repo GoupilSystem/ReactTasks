@@ -10,7 +10,7 @@ function TaskList({ tasks, handleTaskToggle, handleTaskDelete, handleTaskComplet
             className={task.completed ? 'completed task-text' : 'task-text'}
             onClick={() => handleTaskToggle(task.id)}
           >
-            {task.text}
+            {task.name} (id:{task.id})
           </span>
           <button className="delete-button" onClick={() => handleTaskDelete(task.id)}>
             Delete

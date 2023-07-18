@@ -7,7 +7,7 @@ import './app.css';
 
 function App() {
   const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState('');
+  const [newTaskName, setNewTaskName] = useState('');
 
   const [filters, setFilters] = useState({
     completed: false,
@@ -19,21 +19,24 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleTaskChange = (event) => {
-    setNewTask(event.target.value);
+    setNewTaskName(event.target.value);
   };
 
   const handleTaskSubmit = (event) => {
     event.preventDefault();
-    if (newTask.trim() === '') return;
+    if (newTaskName.trim() === '') return;
 
     const task = {
-      id: new Date().getTime(),
-      text: newTask,
+      name: newTaskName,
+      id: tasks.length + 1,
+      text: setNewTaskName,
+      createdAt: new Date().getTime(),
       completed: false,
     };
 
     setTasks([...tasks, task]);
-    setNewTask('');
+    console.log(`Add a task: new count = ${tasks.length}`);
+    setNewTaskName('');
   };
 
   const handleTaskDelete = (taskId) => {
@@ -73,7 +76,7 @@ function App() {
     setSearchQuery(query);
   };
   
-  const filteredTasks = tasks
+  const filteredTasks = tasks?.length > 0 ? tasks
   .filter((task) => {
     // Apply filters
     if (filters.completed && !task.completed) {
@@ -87,38 +90,35 @@ function App() {
   })
   .filter((task) => {
     // Apply search query
-    const taskText = task.text.toLowerCase();
+    const taskText = task?.name?.toLowerCase();
     const query = searchQuery.toLowerCase();
-    return taskText.includes(query);
+    return taskText?.includes(query);
   })
   .sort((a, b) => {
     // Apply sorting
     if (sortCriteria === 'name') {
-      return a.text.localeCompare(b.text);
+      return a?.name?.localeCompare(b?.name);
     }
     // Add additional sorting criteria as needed
     return 0;
-  });
-
-  const [response, setResponse] = useState('');
+  }) : [];
 
   useEffect(() => {
-    const fetchData = async () => {
+    // Fetch tasks from the API
+    const fetchTasks = async () => {
       try {
-        const url = 'https://reacttasks-functions.azurewebsites.net/api/TaskManagementFunction';
-        const response = await fetch(url);    
+        const response = await fetch('https://reacttasks-functions.azurewebsites.net/api/TaskManagementFunction');
         if (!response.ok) {
           throw new Error(`Request failed with status ${response.status}`);
-        }    
-        const data = await response.text();
-        console.log(data);    
-        setResponse(data);
+        }
+        const data = await response.json();
+        setTasks(data);
       } catch (error) {
         console.error('Error:', error);
       }
     };
-  
-    fetchData();
+
+    fetchTasks();
   }, []);
 
   return (
@@ -131,8 +131,8 @@ function App() {
         <form onSubmit={handleTaskSubmit}>
           <input
             type="text"
-            value={newTask}
-            onChange={handleTaskChange}
+            value={newTaskName}
+            onChange={(event) => setNewTaskName(event.target.value)}
             placeholder="Enter a new task"
           />
           <button type="submit">Add Task</button>
@@ -155,11 +155,6 @@ function App() {
           />
           <Route path="/simple" element={<Simple />} />
         </Routes>
-
-        <div>
-          <h1>Azure Function Response:</h1>
-          <p>{response}</p>
-        </div>
 
       </div>
     </Router>
