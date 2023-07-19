@@ -22,27 +22,49 @@ function App() {
     setNewTaskName(event.target.value);
   };
 
-  const handleTaskSubmit = (event) => {
+  const handleTaskSubmit = async (event) => {
     event.preventDefault();
     if (newTaskName.trim() === '') return;
+    
+    // Submit = POST via query (not body)
+    const url = `https://reacttasks-functions.azurewebsites.net/api/TaskManagement?name=${encodeURIComponent(newTaskName)}`;
 
-    const task = {
-      name: newTaskName,
-      id: tasks.length + 1,
-      text: setNewTaskName,
-      createdAt: new Date().getTime(),
-      completed: false,
-    };
-
-    setTasks([...tasks, task]);
-    console.log(`Add a task: new count = ${tasks.length}`);
-    setNewTaskName('');
+    try {
+      const response = await fetch(url, { method: 'POST' });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to add task. Status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      console.log('Task added:', data);
+  
+      setTasks([...tasks, data]);
+      console.log('Add a task: new count = ' + tasks.length);
+      setNewTaskName('');
+    } catch (error) {
+      console.error('Error while adding a task:', error);
+    }
   };
 
-  const handleTaskDelete = (taskId) => {
-    const updatedTasks = tasks.filter((task) => task.id !== taskId);
-    setTasks(updatedTasks);
+  const handleTaskDelete = async (taskId) => {
+    // Delete the task via API
+    const url = `https://reacttasks-functions.azurewebsites.net/api/TaskManagement?id=${encodeURIComponent(taskId)}`;
+  
+    try {
+      const response = await fetch(url, { method: 'DELETE' });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to delete task. Status: ${response.status}`);
+      }
+  
+      // If the task was successfully deleted, update the local state by filtering out the deleted task.
+      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+    } catch (error) {
+      console.error('Error while deleting a task:', error);
+    }
   };
+  
 
   const handleTaskToggle = (taskId) => {
     const updatedTasks = tasks.map((task) => {
@@ -107,10 +129,10 @@ function App() {
     // Fetch tasks from the API
     const fetchTasks = async () => {
       try {
-        const response = await fetch('https://reacttasks-functions.azurewebsites.net/api/TaskManagementFunction');
+        const response = await fetch('https://reacttasks-functions.azurewebsites.net/api/TaskManagement');
         if (!response.ok) {
           throw new Error(`Request failed with status ${response.status}`);
-        }
+        }0
         const data = await response.json();
         setTasks(data);
       } catch (error) {
