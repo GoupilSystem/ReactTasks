@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import TaskList from './components/TaskList';
 import Search from './components/Search';
 import Simple from './components/Simple';
+import UserInfo from './components/UserInfo';
 import Config from './Config';
 import { PublicClientApplication } from '@azure/msal-browser';
 import './app.css';
@@ -200,45 +201,48 @@ function App() {
     <Router>
       <div className="App">
 
+        <UserInfo
+            isAuthenticated={isAuthenticated}
+            user={user}
+            login={login}
+            logout={logout}
+        />
+
         {isAuthenticated ? (
-          <p>Succesfully logged in</p>
-        ) : (
-          <p>
-            <button onClick={login}>Login</button>
-          </p>
-        )}
+          <>
+            <h1>Task Management Application</h1>
 
-        <h1>Task Management Application</h1>
+            <Search searchQuery={searchQuery} handleSearchChange={handleSearchChange} />
 
-        <Search searchQuery={searchQuery} handleSearchChange={handleSearchChange} />
+            <form onSubmit={handleTaskSubmit}>
+              <input
+                type="text"
+                value={newTaskName}
+                onChange={(event) => setNewTaskName(event.target.value)}
+                placeholder="Enter a new task"
+              />
+              <button type="submit">Add Task</button>
+            </form>
 
-        <form onSubmit={handleTaskSubmit}>
-          <input
-            type="text"
-            value={newTaskName}
-            onChange={(event) => setNewTaskName(event.target.value)}
-            placeholder="Enter a new task"
-          />
-          <button type="submit">Add Task</button>
-        </form>
+            {/* Sort Dropdown */}
+            <select value={sortCriteria} onChange={(e) => handleSortChange(e.target.value)}>
+              <option value="">Sort by</option>
+              <option value="name">Name</option>
+              {/* Add additional sort options as needed */}
+            </select>
 
-        {/* Sort Dropdown */}
-        <select value={sortCriteria} onChange={(e) => handleSortChange(e.target.value)}>
-          <option value="">Sort by</option>
-          <option value="name">Name</option>
-          {/* Add additional sort options as needed */}
-        </select>
-
-        <Routes>
-          {/* Add your routes */}
-          <Route path="/" element={<TaskList 
-            tasks={filteredTasks} 
-            handleTaskToggle={handleTaskToggle} 
-            handleTaskDelete={handleTaskDelete} 
-            handleTaskComplete={handleTaskComplete} />} 
-          />
-          <Route path="/simple" element={<Simple />} />
-        </Routes>
+            <Routes>
+              {/* Add your routes */}
+              <Route path="/" element={<TaskList 
+                tasks={filteredTasks} 
+                handleTaskToggle={handleTaskToggle} 
+                handleTaskDelete={handleTaskDelete} 
+                handleTaskComplete={handleTaskComplete} />} 
+              />
+              <Route path="/simple" element={<Simple />} />
+            </Routes>
+          </>
+        ) : null}
 
       </div>
     </Router>
