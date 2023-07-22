@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import TaskList from './components/TaskList';
 import Search from './components/Search';
-import Simple from './components/Simple'; 
+import Simple from './components/Simple';
+import Config from './Config';
+import { PublicClientApplication } from '@azure/msal-browser';
 import './app.css';
 
 function App() {
@@ -63,8 +65,7 @@ function App() {
     } catch (error) {
       console.error('Error while deleting a task:', error);
     }
-  };
-  
+  }; 
 
   const handleTaskToggle = (taskId) => {
     const updatedTasks = tasks.map((task) => {
@@ -132,7 +133,7 @@ function App() {
         const response = await fetch('https://reacttasks-functions.azurewebsites.net/api/TaskManagement');
         if (!response.ok) {
           throw new Error(`Request failed with status ${response.status}`);
-        }0
+        }
         const data = await response.json();
         setTasks(data);
       } catch (error) {
@@ -143,9 +144,70 @@ function App() {
     fetchTasks();
   }, []);
 
+  const msalConfig = {
+    auth: {
+      clientId: Config.auth.clientId, // Access clientId correctly from Config
+      redirectUri: Config.auth.redirectUri,
+      authority: Config.auth.authority,
+    },
+    cache: {
+      cacheLocation: Config.cache.cacheLocation,
+      storeAuthStateInCookie: Config.cache.storeAuthStateInCookie,
+    },
+  };
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // Define the user authentication state
+  const [user, setUser] = useState({});
+  const [isInteracting, setIsInteracting] = useState(false);
+
+  const loginRequest = {
+    scopes: ['openid', 'profile', 'email'], // Add additional scopes as needed
+  };
+
+  const myMSALObj = new PublicClientApplication(msalConfig);
+
+  const login = async () => {
+    try {
+      // Prevent multiple interactions if one is already in progress
+      if (isInteracting) return;
+
+      setIsInteracting(true); // Set the isInteracting state to true
+
+      const response = await myMSALObj.loginPopup(loginRequest);
+      const userAccount = response.account;
+      if (userAccount) {
+        setIsAuthenticated(true);
+        setUser(userAccount);
+      }
+
+      setIsInteracting(false); // Reset isInteracting state after the interaction is completed
+    } catch (error) {
+      console.error('Error during login:', error);
+      setIsAuthenticated(false);
+      setUser({});
+      setIsInteracting(false); // Reset isInteracting state in case of error as well
+    }
+  };
+
+
+  const logout = () => {
+    myMSALObj.logoutRedirect();
+    setIsAuthenticated(false);
+    setUser({});
+  };
+
   return (
     <Router>
       <div className="App">
+
+        {isAuthenticated ? (
+          <p>Succesfully logged in</p>
+        ) : (
+          <p>
+            <button onClick={login}>Login</button>
+          </p>
+        )}
+
         <h1>Task Management Application</h1>
 
         <Search searchQuery={searchQuery} handleSearchChange={handleSearchChange} />
