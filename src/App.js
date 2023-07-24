@@ -29,6 +29,12 @@ function App() {
     event.preventDefault();
     if (newTaskName.trim() === '') return;
     
+    // Perform authorization check here (assuming you have user data available in the 'user' state)
+    // if (user.category !== 'CanAdd') {
+    //   console.log('You do not have permission to add tasks.');
+    //   return;
+    // }
+
     // Submit = POST via query (not body)
     const url = `https://reacttasks-functions.azurewebsites.net/api/TaskManagement?name=${encodeURIComponent(newTaskName)}`;
 
@@ -178,9 +184,12 @@ function App() {
       const userAccount = response.account;
       if (userAccount) {
         setIsAuthenticated(true);
-        setUser(userAccount);
+        const userWithCategory = {
+          ...userAccount,
+          category: userAccount.category || '', // Ensure the category property exists or set it to an empty string
+        };
+        setUser(userWithCategory);
       }
-
       setIsInteracting(false); // Reset isInteracting state after the interaction is completed
     } catch (error) {
       console.error('Error during login:', error);
@@ -189,7 +198,6 @@ function App() {
       setIsInteracting(false); // Reset isInteracting state in case of error as well
     }
   };
-
 
   const logout = () => {
     myMSALObj.logoutRedirect();
