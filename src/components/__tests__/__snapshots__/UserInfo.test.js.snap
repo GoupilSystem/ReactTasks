@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders UserInfo component correctly 1`] = `
+<DocumentFragment>
+  <div
+    style="display: flex; align-items: center;"
+  >
+    <p
+      style="margin-right: 10px;"
+    >
+      Welcome, John Doe
+    </p>
+    <p
+      style="margin-right: 10px;"
+    >
+      Email: john.doe@example.com
+    </p>
+    <button>
+      Logout
+    </button>
+  </div>
+</DocumentFragment>
+`;

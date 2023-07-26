@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+import { Provider } from 'react-redux';
+import TaskForWithRedux from './components/TaskFormWithRedux';
+import TaskListWithRedux from './components/TaskListWithRedux';
+import store from './redux/store';
+import { fetchTasks } from './redux/actions';
+
 import TaskList from './components/TaskList';
 import Search from './components/Search';
 import Simple from './components/Simple';
@@ -9,6 +16,16 @@ import { PublicClientApplication } from '@azure/msal-browser';
 import './app.css';
 
 function App() {
+  useEffect(() => {
+    // Dispatch the fetchTasks action when the component mounts
+    store.dispatch(fetchTasks());
+  }, []);
+
+  // useEffect(() => {
+  //   // Fetch tasks from the API and update the Redux store
+  //   dispatch(fetchTasks());
+  // }, [dispatch]);
+  
   const [tasks, setTasks] = useState([]);
   const [newTaskName, setNewTaskName] = useState('');
 
@@ -206,54 +223,59 @@ function App() {
   };
 
   return (
-    <Router>
-      <div className="App">
+    <Provider store={store}>
+      <TaskForWithRedux />
+      <TaskListWithRedux />
 
-        <UserInfo
-            isAuthenticated={isAuthenticated}
-            user={user}
-            login={login}
-            logout={logout}
-        />
+      <Router>
+        <div className="App">
 
-        {isAuthenticated ? (
-          <>
-            <h1>Task Management Application</h1>
+          <UserInfo
+              isAuthenticated={isAuthenticated}
+              user={user}
+              login={login}
+              logout={logout}
+          />
 
-            <Search searchQuery={searchQuery} handleSearchChange={handleSearchChange} />
+          {isAuthenticated ? (
+            <>
+              <h1>Task Management Application</h1>
 
-            <form onSubmit={handleTaskSubmit}>
-              <input
-                type="text"
-                value={newTaskName}
-                onChange={(event) => setNewTaskName(event.target.value)}
-                placeholder="Enter a new task"
-              />
-              <button type="submit">Add Task</button>
-            </form>
+              <Search searchQuery={searchQuery} handleSearchChange={handleSearchChange} />
 
-            {/* Sort Dropdown */}
-            <select value={sortCriteria} onChange={(e) => handleSortChange(e.target.value)}>
-              <option value="">Sort by</option>
-              <option value="name">Name</option>
-              {/* Add additional sort options as needed */}
-            </select>
+              <form onSubmit={handleTaskSubmit}>
+                <input
+                  type="text"
+                  value={newTaskName}
+                  onChange={(event) => setNewTaskName(event.target.value)}
+                  placeholder="Enter a new task"
+                />
+                <button type="submit">Add Task</button>
+              </form>
 
-            <Routes>
-              {/* Add your routes */}
-              <Route path="/" element={<TaskList 
-                tasks={filteredTasks} 
-                handleTaskToggle={handleTaskToggle} 
-                handleTaskDelete={handleTaskDelete} 
-                handleTaskComplete={handleTaskComplete} />} 
-              />
-              <Route path="/simple" element={<Simple />} />
-            </Routes>
-          </>
-        ) : null}
+              {/* Sort Dropdown */}
+              <select value={sortCriteria} onChange={(e) => handleSortChange(e.target.value)}>
+                <option value="">Sort by</option>
+                <option value="name">Name</option>
+                {/* Add additional sort options as needed */}
+              </select>
 
-      </div>
-    </Router>
+              <Routes>
+                {/* Add your routes */}
+                <Route path="/" element={<TaskList 
+                  tasks={filteredTasks} 
+                  handleTaskToggle={handleTaskToggle} 
+                  handleTaskDelete={handleTaskDelete} 
+                  handleTaskComplete={handleTaskComplete} />} 
+                />
+                <Route path="/simple" element={<Simple />} />
+              </Routes>
+            </>
+          ) : null}
+
+        </div>
+      </Router>
+    </Provider>
   );
 }
 
